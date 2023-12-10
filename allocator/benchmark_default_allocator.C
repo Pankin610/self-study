@@ -1,6 +1,5 @@
 #include "benchmark/benchmark.h"
 
-#include "SmallObjAllocator.H"
 #include <exception>
 #include <random>
 #include <iostream>
@@ -10,7 +9,6 @@ std::vector<bool> operation_is_alloc;
 std::vector<size_t> ind;
 
 static size_t BLOCK_SIZE = 64;
-static unsigned char CHUNK_SIZE = 100;
 
 static void DoSetup(const benchmark::State& state)
 {
@@ -51,7 +49,6 @@ static void random_alloc_and_dealloc(benchmark::State& state)
 {
     assert(operation_is_alloc.size() == ind.size());
 
-    SmallObjAllocator allocator(BLOCK_SIZE);
     std::vector<void*> alloc_objs;
 
     size_t i = 0;
@@ -61,11 +58,11 @@ static void random_alloc_and_dealloc(benchmark::State& state)
         assert(ind[i] < alloc_objs.size() || alloc_objs.size() == 0);
         if (operation_is_alloc[i])
         {
-            alloc_objs.push_back(allocator.Allocate(BLOCK_SIZE));
+            alloc_objs.push_back(new char[BLOCK_SIZE]);
         }
         else
         {
-            allocator.Deallocate(alloc_objs[ind[i]], BLOCK_SIZE);
+            delete (char*)alloc_objs[ind[i]];
             std::swap(alloc_objs[ind[i]], alloc_objs.back());
             alloc_objs.pop_back();
         }
@@ -75,10 +72,9 @@ static void random_alloc_and_dealloc(benchmark::State& state)
 
 static void allocate_and_deallocate(benchmark::State& state)
 {
-    SmallObjAllocator allocator(CHUNK_SIZE);
     for (auto _ : state)
     {
-        allocator.Deallocate(allocator.Allocate(BLOCK_SIZE), BLOCK_SIZE);
+        delete new char[BLOCK_SIZE];
     }
 }
 
@@ -86,16 +82,15 @@ static void allocate_a_lot_and_deallocate_in_order(benchmark::State& state)
 {
     for (auto _ : state)
     {
-        std::vector<void*> objs;
+        std::vector<char*> objs;
         objs.reserve(10000);
-        SmallObjAllocator allocator(CHUNK_SIZE);
         for (size_t i = 0; i < 10000; i++)
         {
-            objs.push_back(allocator.Allocate(BLOCK_SIZE));
+            objs.push_back(new char[BLOCK_SIZE]);
         }
-        for (void* ptr : objs)
+        for (char* ptr : objs)
         {
-            allocator.Deallocate(ptr, BLOCK_SIZE);
+            delete ptr;
         }
     }
 }
@@ -104,16 +99,15 @@ static void allocate_a_lot_and_deallocate_in_reverse_order(benchmark::State& sta
 {
     for (auto _ : state)
     {
-        std::vector<void*> objs;
+        std::vector<char*> objs;
         objs.reserve(10000);
-        SmallObjAllocator allocator(CHUNK_SIZE);
         for (size_t i = 0; i < 10000; i++)
         {
-            objs.push_back(allocator.Allocate(BLOCK_SIZE));
+            objs.push_back(new char[BLOCK_SIZE]);
         }
         for (size_t i = 0; i < objs.size(); i++)
         {
-            allocator.Deallocate(objs[objs.size() - 1 - i], BLOCK_SIZE);
+            delete objs[objs.size() - 1 - i];
         }
     }
 }
