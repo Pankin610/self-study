@@ -76,11 +76,10 @@ static void random_alloc_and_dealloc(benchmark::State& state)
 
 static void allocate_and_deallocate(benchmark::State& state)
 {
-    size_t obj_size = 64;
     SmallObjAllocator allocator(CHUNK_SIZE);
     for (auto _ : state)
     {
-        allocator.Deallocate(allocator.Allocate(obj_size), BLOCK_SIZE);
+        allocator.Deallocate(allocator.Allocate(BLOCK_SIZE), BLOCK_SIZE);
     }
 }
 
@@ -90,14 +89,14 @@ static void allocate_a_lot_and_deallocate_in_order(benchmark::State& state)
     {
         std::vector<void*> objs;
         objs.reserve(10000);
-        SmallObjAllocator allocator(100);
+        SmallObjAllocator allocator(CHUNK_SIZE);
         for (size_t i = 0; i < 10000; i++)
         {
-            objs.push_back(allocator.Allocate(64));
+            objs.push_back(allocator.Allocate(BLOCK_SIZE));
         }
         for (void* ptr : objs)
         {
-            allocator.Deallocate(ptr, 64);
+            allocator.Deallocate(ptr, BLOCK_SIZE);
         }
     }
 }
@@ -108,14 +107,14 @@ static void allocate_a_lot_and_deallocate_in_reverse_order(benchmark::State& sta
     {
         std::vector<void*> objs;
         objs.reserve(10000);
-        SmallObjAllocator allocator(100);
+        SmallObjAllocator allocator(CHUNK_SIZE);
         for (size_t i = 0; i < 10000; i++)
         {
-            objs.push_back(allocator.Allocate(64));
+            objs.push_back(allocator.Allocate(BLOCK_SIZE));
         }
         for (size_t i = 0; i < objs.size(); i++)
         {
-            allocator.Deallocate(objs[objs.size() - 1 - i], 64);
+            allocator.Deallocate(objs[objs.size() - 1 - i], BLOCK_SIZE);
         }
     }
 }
@@ -124,7 +123,6 @@ BENCHMARK(random_alloc_and_dealloc)->Iterations(10000000)->Setup(DoSetup)->Teard
 BENCHMARK(allocate_and_deallocate)->Iterations(10000000);
 BENCHMARK(allocate_a_lot_and_deallocate_in_order)->Iterations(10000);
 BENCHMARK(allocate_a_lot_and_deallocate_in_reverse_order)->Iterations(10000);
-
 
 int main(int argc, char** argv) {
     // Run the benchmark

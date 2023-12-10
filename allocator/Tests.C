@@ -21,6 +21,7 @@ int main()
 
     assert(allocator.get_allocators().size() == 1);
 
+    // Just a segfault check
     std::vector<void*> alloc_objs;
     std::mt19937 rng(610);
     for (size_t iter = 0; iter < 10000; iter++)
