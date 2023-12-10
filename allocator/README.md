@@ -66,3 +66,13 @@ Smaller objects, 4 bytes:
 |allocate_and_deallocate/iterations:10000000                      |     26.7 ns   |      26.7 ns |    10000000|
 |allocate_a_lot_and_deallocate_in_order/iterations:10000          |   530457 ns   |    530450 ns |       10000|
 |allocate_a_lot_and_deallocate_in_reverse_order/iterations:10000  |   530838 ns   |    530382 ns |       10000|
+
+Default allocator:
+|-----------------------------------------------------------------|---------------|--------------|------------|
+|Benchmark                                                        |        Time   |          CPU |  Iterations|
+|-----------------------------------------------------------------|---------------|--------------|------------|
+|                                                                 |               |              |            |
+|random_alloc_and_dealloc/iterations:10000000                     |     53.5 ns   |      53.5 ns |    10000000|
+|allocate_and_deallocate/iterations:10000000                      |     20.8 ns   |      20.8 ns |    10000000|
+|allocate_a_lot_and_deallocate_in_order/iterations:10000          |   644920 ns   |    644910 ns |       10000|
+|allocate_a_lot_and_deallocate_in_reverse_order/iterations:10000  |   596027 ns   |    596019 ns |       10000|
