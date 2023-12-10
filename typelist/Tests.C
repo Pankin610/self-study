@@ -1,11 +1,13 @@
 #include <iostream>
 #include <type_traits>
+#include <typeinfo>
 #include "TypeList.H"
 #include "Erase.H"
 #include "Length.H"
 #include "IndexOf.H"
 #include "SortedBySize.H"
 #include "WithoutDuplicates.H"
+#include <memory>
 
 typedef TypeList<char,
     TypeList<unsigned char,
@@ -49,8 +51,60 @@ typedef TypeList<char,
 static_assert(Length<CharListWithDuplicates>::value == 5);
 static_assert(Length< WithoutDuplicates<CharListWithDuplicates>::Result >::value == 3);
 
+struct Component{};
+
+struct PolicyA{};
+struct PolicyB{};
+
+template<class Policy>
+class SomeComp : public Component, public Policy
+{
+public:
+
+};
+
+typedef TypeList<PolicyA, TypeList<PolicyB, NullType> > PolicyList;
+
+template<class Policies>
+struct Matcher
+{
+    std::unique_ptr<Component> get_comp_with_policy(const std::string& policy_name);
+};
+
+template<>
+struct Matcher<NullType>
+{
+    std::unique_ptr<Component> get_comp_with_policy(const std::string& policy_name)
+    {
+        return nullptr;
+    }
+};
+
+template<class U, class Next>
+struct Matcher< TypeList<U, Next> >
+{
+    std::unique_ptr<Component> get_comp_with_policy(const std::string& policy_name)
+    {
+        U* u = nullptr;
+        if (policy_name == typeid(u).name())
+        {
+            return std::make_unique< SomeComp<U> >();
+        }
+        else
+        {
+            Matcher<Next> matcher;
+            return matcher.get_comp_with_policy(policy_name);
+        }
+    }
+
+};
+
+
+
 int main()
 {
-
+    std::unique_ptr<Component> comp = Matcher<PolicyList>().get_comp_with_policy("F7PolicyAvE");
+    std::cout << comp.get() << std::endl;
+    std::cout << typeid(PolicyA()).name() << std::endl;
     return 0;
 }
